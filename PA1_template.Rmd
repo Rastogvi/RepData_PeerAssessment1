@@ -5,21 +5,106 @@ output:
     keep_md: true
 ---
 
+```{r include=FALSE}
+library(knitr)
+library(tidyverse)
+library(lubridate)
+library(ggplot2)
+library(dplyr)
+library(Hmisc)
+```
+
+```{r include=FALSE}
+setwd("~/VINITA/GRAYDON/R scripts/Coursera---Reproducible-Research")
+```
 
 ## Loading and preprocessing the data
 
+```{r echo=TRUE}
+activity <- read.csv("activity.csv", header = TRUE)
 
+head(activity)
+
+sapply(activity, function (x) sum(is.na(x)))
+
+```
 
 ## What is mean total number of steps taken per day?
 
+```{r echo=TRUE}
+step_each_day <- tapply(activity$steps, activity$date, sum)
+
+head(step_each_day)
+
+hist(step_each_day, xlab = "No. of Steps", main = "Total number of steps taken each day", col = "green", labels = TRUE)
+
+mean_steps <- floor(mean(step_each_day, na.rm = TRUE))
+mean_steps
+median_steps <- median(step_each_day, na.rm = TRUE)
+median_steps
+
+```
 
 
 ## What is the average daily activity pattern?
 
+```{r}
+average_steps <- tapply(activity$steps, activity$interval, mean, na.rm = TRUE)
 
+plot(average_steps,type = "l", xlab = "5-minute Interval", ylab = "Average number of steps taken", main = "Time series plot" )
+
+which.max(average_steps)
+```
 
 ## Imputing missing values
 
+```{r}
 
+Missing_rows <- sapply(activity, function (x) sum(is.na(x)))
+
+No_of_missing_rows <- sum(Missing_rows)
+
+activity_imp <- activity
+
+library(plyr)
+
+activity_imp <- ddply(activity_imp, "interval", mutate, steps = impute(steps,mean))
+
+step_each_day_imp <- tapply(activity_imp$steps, activity_imp$date, sum)
+head(step_each_day_imp)
+
+mean(step_each_day_imp)
+median(step_each_day_imp)
+
+hist(step_each_day_imp, xlab = "No. of Steps", main = "Total number of steps taken each day", col = "green", labels = TRUE)
+
+```
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+```{r}
+activity_imp$wday <- wday(activity_imp$date, label = TRUE)  
+
+Weekday <- activity_imp %>%
+           select(steps, date, interval, wday) %>%
+           filter(wday %in% c("Mon", "Tue", "Wed", "Thu", "Fri"))
+
+Weekend <- activity_imp %>%
+           select(steps, date, interval, wday) %>%
+           filter(wday %in% c("Sat", "Sun"))
+
+steps_Weekday <- tapply(Weekday$steps, Weekday$interval, mean)
+
+steps_Weekend <- tapply(Weekend$steps, Weekend$interval, mean)
+
+par(mfrow = c(2,1))
+
+plot(steps_Weekday, type = "l", main = "Weekdays",
+     xlab = "Interval",
+     ylab = "ANumber of Steps")
+
+plot(steps_Weekend, type = "l", main = "Weekend",
+     xlab = "Interval",
+     ylab = "Number of Steps")
+  
+```
