@@ -1,8 +1,8 @@
 ---
 title: "Reproducible Research: Peer Assessment 1"
 output: 
-  html_document:
-    keep_md: true
+html_document:
+keep_md: true
 ---
 
 ```{r include=FALSE}
@@ -20,7 +20,7 @@ setwd("~/VINITA/GRAYDON/R scripts/Coursera---Reproducible-Research")
 
 ## Loading and preprocessing the data
 
-```{r echo=TRUE}
+```{r echo=TRUE, load}
 activity <- read.csv("activity.csv", header = TRUE)
 
 head(activity)
@@ -31,7 +31,7 @@ sapply(activity, function (x) sum(is.na(x)))
 
 ## What is mean total number of steps taken per day?
 
-```{r echo=TRUE}
+```{r echo=TRUE, mean}
 step_each_day <- tapply(activity$steps, activity$date, sum)
 
 head(step_each_day)
@@ -48,7 +48,7 @@ median_steps
 
 ## What is the average daily activity pattern?
 
-```{r}
+```{r, pattern}
 average_steps <- tapply(activity$steps, activity$interval, mean, na.rm = TRUE)
 
 plot(average_steps,type = "l", xlab = "5-minute Interval", ylab = "Average number of steps taken", main = "Time series plot" )
@@ -58,7 +58,7 @@ which.max(average_steps)
 
 ## Imputing missing values
 
-```{r}
+```{r, impute}
 
 Missing_rows <- sapply(activity, function (x) sum(is.na(x)))
 
@@ -82,7 +82,7 @@ hist(step_each_day_imp, xlab = "No. of Steps", main = "Total number of steps tak
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
-```{r}
+```{r, weekday}
 activity_imp$wday <- wday(activity_imp$date, label = TRUE)  
 
 Weekday <- activity_imp %>%
